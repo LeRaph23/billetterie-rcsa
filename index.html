@@ -22,6 +22,15 @@
             font-size: 18px;
             margin-top: 20px;
         }
+        #history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            background: #222;
+            padding: 10px;
+            border-radius: 10px;
+        }
         .alert {
             display: none;
             position: fixed;
@@ -48,7 +57,12 @@
 </head>
 <body>
     <h1>📢 Surveillance des places du RCSA</h1>
-    <p id="status">Recherche en cours...</p>
+    <p id="status">🔍 Recherche en cours...</p>
+    
+    <div id="history">
+        <h3>📜 Historique des vérifications :</h3>
+        <ul id="history-list"></ul>
+    </div>
 
     <div id="alert" class="alert">🚨 PLACE "OUEST" DISPONIBLE !!! 🚨</div>
 
@@ -59,22 +73,40 @@
     <script>
         async function checkBilletterie() {
             const url = "https://billetterie.rcstrasbourgalsace.fr/fr/second/match-rcsa-olympique-lyonnais/";
-            
+            const historyList = document.getElementById("history-list");
+
             try {
                 let response = await fetch(url);
                 let text = await response.text();
                 
+                let timestamp = new Date().toLocaleTimeString();
+                let message;
+
                 if (text.includes("OUEST")) {
                     document.getElementById("alert").style.display = "block";
                     document.getElementById("alertSound").play();
+                    message = `✅ [${timestamp}] PLACE "OUEST" DISPONIBLE !`;
                 } else {
-                    document.getElementById("status").textContent = "🔄 Aucune place 'OUEST' trouvée. Nouvelle vérification...";
+                    message = `❌ [${timestamp}] Aucune place "OUEST" trouvée.`;
                 }
+
+                document.getElementById("status").textContent = message;
+
+                // Ajouter à l'historique des vérifications
+                let listItem = document.createElement("li");
+                listItem.textContent = message;
+                historyList.prepend(listItem);
+
+                // Limiter l'historique à 10 entrées
+                while (historyList.childNodes.length > 10) {
+                    historyList.removeChild(historyList.lastChild);
+                }
+
             } catch (error) {
-                console.log("Erreur réseau : ", error);
+                console.log("⚠️ Erreur réseau : ", error);
             }
 
-            let attente = Math.floor(Math.random() * (16 - 10 + 1)) + 10; // 10-16 sec aléatoires
+            let attente = Math.floor(Math.random() * (16 - 10 + 1)) + 8; // 10-16 sec aléatoires
             setTimeout(checkBilletterie, attente * 1000);
         }
 
