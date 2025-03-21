@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚽ Alerte Billetterie RCSA</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+            background: black;
+            color: white;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        #status {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .alert {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: red;
+            color: white;
+            font-size: 50px;
+            text-align: center;
+            padding-top: 30%;
+            z-index: 9999;
+            animation: clignoter 0.5s infinite alternate;
+        }
+        @keyframes clignoter {
+            from { background-color: red; }
+            to { background-color: black; }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>📢 Surveillance des places du RCSA</h1>
+    <p id="status">Recherche en cours...</p>
+
+    <div id="alert" class="alert">🚨 PLACE "OUEST" DISPONIBLE !!! 🚨</div>
+
+    <audio id="alertSound" class="hidden">
+        <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        async function checkBilletterie() {
+            const url = "https://billetterie.rcstrasbourgalsace.fr/fr/second/match-rcsa-olympique-lyonnais/";
+            
+            try {
+                let response = await fetch(url);
+                let text = await response.text();
+                
+                if (text.includes("OUEST")) {
+                    document.getElementById("alert").style.display = "block";
+                    document.getElementById("alertSound").play();
+                } else {
+                    document.getElementById("status").textContent = "🔄 Aucune place 'OUEST' trouvée. Nouvelle vérification...";
+                }
+            } catch (error) {
+                console.log("Erreur réseau : ", error);
+            }
+
+            let attente = Math.floor(Math.random() * (16 - 10 + 1)) + 10; // 10-16 sec aléatoires
+            setTimeout(checkBilletterie, attente * 1000);
+        }
+
+        checkBilletterie();
+    </script>
+</body>
+</html>
